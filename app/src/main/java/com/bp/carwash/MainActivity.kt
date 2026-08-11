@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         card.findViewById<TextView>(R.id.tierPrice).text = tier.priceLabel
         if (tier.featured) {
             card.setBackgroundResource(R.drawable.bg_tier_card_featured)
+            card.findViewById<TextView>(R.id.tierBadge).visibility = View.VISIBLE
         }
         // Styling variant exposed for UI tests (drawable identity isn't
         // comparable across inflations).

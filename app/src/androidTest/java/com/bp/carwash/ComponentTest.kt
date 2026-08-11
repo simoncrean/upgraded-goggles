@@ -96,6 +96,17 @@ class ComponentTest {
     }
 
     @Test
+    fun bestValueBadgeShownOnlyOnUltimate() {
+        ActivityScenario.launch(MainActivity::class.java).use {
+            onView(inCard(R.id.tierUltimate, R.id.tierBadge))
+                .check(matches(allOf(isDisplayed(), withText("BEST VALUE"))))
+            listOf(R.id.tierQuick, R.id.tierExpress, R.id.tierDeluxe).forEach { cardId ->
+                onView(inCard(cardId, R.id.tierBadge)).check(matches(not(isDisplayed())))
+            }
+        }
+    }
+
+    @Test
     fun tierPriceIsRenderedProminentlyAboveName() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->

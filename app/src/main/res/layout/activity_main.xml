@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/flipper"
     android:layout_width="match_parent"
@@ -186,12 +187,16 @@
 
         <Button
             android:id="@+id/cancelButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="20dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             android:text="@string/cancel"
-            android:textColor="@color/text_secondary" />
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            app:strokeColor="@color/stroke_subtle" />
     </LinearLayout>
 
     <!-- ============ Screen 2: result ============ -->
@@ -206,7 +211,7 @@
             android:id="@+id/resultIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="52sp"
+            android:textSize="60sp"
             tools:text="✓" />
 
         <TextView
@@ -226,27 +231,31 @@
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:textColor="@color/text_secondary"
-            android:textSize="13sp"
+            android:textSize="15sp"
             tools:text="Wash unlocked" />
 
         <TextView
             android:id="@+id/resultInstruction"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="14dp"
             android:gravity="center"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp"
-            tools:text="Enter this code at the wash bay" />
+            android:textColor="@color/bp_yellow"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            tools:text="Drive through to the wash bay" />
 
         <Button
             android:id="@+id/doneButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="24dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             android:backgroundTint="@color/bp_green"
             android:textColor="@color/text_primary"
-            android:paddingHorizontal="36dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
             tools:text="Done" />
     </LinearLayout>
 </ViewFlipper>

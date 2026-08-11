@@ -26,5 +26,6 @@
     <string name="declined_subtitle">No charge was made.\nPlease try another card.</string>
     <string name="try_again">Try again</string>
 
+    <string name="badge_best_value">BEST VALUE</string>
     <string name="footer_tagline">Powered by Quest QT850</string>
 </resources>

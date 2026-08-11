@@ -1,43 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
     android:background="@drawable/bg_tier_card"
-    android:padding="8dp"
     android:clickable="true"
     android:focusable="true">
 
     <TextView
-        android:id="@+id/tierPrice"
+        android:id="@+id/tierBadge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/bp_yellow"
-        android:textSize="40sp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_badge"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="2dp"
+        android:text="@string/badge_best_value"
+        android:textColor="@color/surface_night"
+        android:textSize="10sp"
         android:textStyle="bold"
-        android:fontFamily="sans-serif-black"
-        tools:text="$20" />
+        android:letterSpacing="0.08"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
-    <TextView
-        android:id="@+id/tierName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         android:gravity="center"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        tools:text="Deluxe Wash" />
+        android:padding="8dp">
 
-    <TextView
-        android:id="@+id/tierDesc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
-        android:gravity="center"
-        android:textColor="@color/text_secondary"
-        android:textSize="11sp"
-        tools:text="Triple foam, wax &amp; dry" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/tierPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/bp_yellow"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-black"
+            tools:text="$20" />
+
+        <TextView
+            android:id="@+id/tierName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="Deluxe Wash" />
+
+        <TextView
+            android:id="@+id/tierDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:gravity="center"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            tools:text="Triple foam, wax &amp; dry" />
+    </LinearLayout>
+</FrameLayout>
