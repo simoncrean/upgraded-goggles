@@ -1,131 +1,142 @@
-# Pay-Carwash — BP Carwash for Quest QT850
+<div align="center">
 
-Premium BP-branded 4-button carwash retail app for the
-[Quest QT850 smart payment terminal](https://www.questpaymentsystems.com/qt850-smart-payment-terminal.html).
+# BP Carwash · Quest QT850
 
-## Product
+**Tap a wash. Tap your card. Drive through.**
 
-Four wash tiers, fixed price points:
+A premium BP-branded carwash retail app for the
+[Quest QT850 smart payment terminal](https://www.questpaymentsystems.com/qt850-smart-payment-terminal.html) —
+a four-button unattended kiosk that sells, charges, and unlocks the wash in
+one flow.
 
-| Tier          | Price | Description                  |
-|---------------|-------|------------------------------|
-| Quick Wash    | $10   | Rinse & dry                  |
-| Express Wash  | $20   | Wash, wax & dry              |
-| Deluxe Wash   | $30   | Triple foam, wax & dry       |
-| Ultimate Wash | $40   | Full detail shine & protect  |
+[![CI](https://github.com/simoncrean/upgraded-goggles/actions/workflows/ci.yml/badge.svg)](https://github.com/simoncrean/upgraded-goggles/actions/workflows/ci.yml)
+![Platform](https://img.shields.io/badge/platform-Android%209%2B-3DDC84?logo=android&logoColor=white)
+![Target](https://img.shields.io/badge/target-Quest%20QT850-009900)
+![Tests](https://img.shields.io/badge/tests-9%20unit%20·%2015%20espresso-FFE600)
 
-Flow: select wash → present card → approved → the app pulses the wash-bay
-controller to unlock the wash (30s idle timeout back to menu). Kiosk posture: portrait-locked, fullscreen, screen
-kept on, back button swallowed, `lockTaskMode=if_whitelisted` for MDM
-pinning, and the activity registers as HOME so a kiosk policy can make it
-the default launcher.
+<img src="docs/demo.gif" width="300" alt="Two purchases end to end on the QT850-sized emulator: Deluxe $30 and Ultimate $40, each approving and unlocking the wash" />
 
-## Demo
+*Recorded on the `qt850` emulator at the terminal's native 480×640.
+Higher quality: [demo.mp4](docs/demo.mp4)*
 
-Recorded on the `qt850` emulator (480×640, the terminal's panel size) —
-two purchases end to end: Deluxe $30 and Ultimate $40, each approving and
-unlocking the wash.
+</div>
 
-![BP Carwash demo](docs/demo.gif)
+---
 
-Higher-quality [MP4 version](docs/demo.mp4).
+## The product
 
-## Target hardware (QT850 spec sheet v10)
+| Wash | Price | Includes |
+|------|:-----:|----------|
+| Quick Wash | **$10** | Rinse & dry |
+| Express Wash | **$20** | Wash, wax & dry |
+| Deluxe Wash | **$30** | Triple foam, wax & dry |
+| Ultimate Wash ⭐ *Best value* | **$40** | Full detail shine & protect |
 
-- Android 9.0 (Pie) → `minSdk 28`
-- 3.5" IPS, **480×640 portrait** — UI is sized for ~320×427dp
-- 1 GB RAM / 8 GB flash → plain Views + Kotlin, no Compose
-- Payments: EMV chip, NFC contactless, MSR — driven by Quest's payment app
+One screen, four big buttons, zero training. When payment approves, the app
+pulses the wash-bay controller and the customer drives through — no codes to
+type, no receipt to keep.
 
-## Build
+```mermaid
+flowchart LR
+    A["🚗 Select wash"] --> B["💳 Present card"]
+    B -->|approved| C["✅ Pulse wash bay"]
+    C --> D["🫧 Drive through"]
+    B -->|declined / cancel| A
+```
 
-Requires JDK 17 and the Android SDK. Copy `local.properties.example` to
-`local.properties` and point `sdk.dir` at your SDK (machine-local, not
-committed).
+Built kiosk-first: portrait-locked, fullscreen, screen always on, back
+button swallowed, `lockTaskMode` for MDM pinning, and registered as HOME so
+a device policy can make it the terminal's launcher. Every idle path times
+out back to the menu — walk-aways never strand the next customer.
+
+## Designed for the hardware
+
+The QT850 is a payment terminal, not a phone
+([spec sheet v10](https://www.questpaymentsystems.com/assets/quest---qt850-payment-terminal---spec-sheet-v10.pdf)):
+
+| Constraint | Decision |
+|------------|----------|
+| Android 9.0 (Pie) | `minSdk 28` |
+| 3.5″ IPS, 480×640 portrait | UI hand-sized for ~320×427dp, ≥52dp touch targets |
+| 1 GB RAM, 8 GB flash | Plain Views + Kotlin, no Compose — 2.3 MB release APK |
+| EMV / NFC / MSR via Quest's payment app | Payments behind a provider abstraction (below) |
+
+## Architecture
+
+```
+app/src/main/java/com/bp/carwash/
+├── MainActivity.kt          # single-activity kiosk UI: menu → processing → result
+├── WashTier.kt              # the catalogue — tiers & prices, money in Long cents
+├── WashBayController.kt     # wash unlock pulse (site hardware integration point)
+└── payment/
+    ├── PaymentProvider.kt   # suspend fun purchase(amountCents, ref): PaymentResult
+    ├── PaymentGateway.kt    # provider selection — the single swap point
+    ├── SimulatedPaymentProvider.kt   # active: approves in 2.5s, runs anywhere
+    └── QuestPaymentProvider.kt       # fail-fast stub until Quest onboarding
+```
+
+**Payments.** The QT850's card readers are driven by Quest's own payment
+application; custom apps hand over the sale amount and receive the result
+(on-terminal intent contract or Quest's Cloud EFTPOS API). That requires
+merchant onboarding — integration pack, fleet registration, MAM-signed
+deployment (Quest: +61 3 8807 4400 / info@questpaymentsystems.com). Until
+then the simulated provider exercises the entire retail flow on any device,
+and the Quest stub throws rather than pretend — it can never be swapped in
+half-configured and silently drop sales. The swap point is one line:
+`PaymentGateway.provider`.
+
+**Wash unlock.** `WashBayController.pulse()` fires on approval and is the
+single integration point for site hardware — RS232 or a network I/O module
+to the bay PLC, with pulse count encoding the tier.
+
+## Quick start
 
 ```sh
-./gradlew assembleDebug      # → app/build/outputs/apk/debug/app-debug.apk
-./gradlew assembleRelease
+cp local.properties.example local.properties   # point sdk.dir at your SDK
+./gradlew assembleDebug                        # → app/build/outputs/apk/debug/
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
+
+JDK 17 + Android SDK (platform 34). Runs on any Android 9+ device or
+emulator — the simulated provider approves every sale so the full flow is
+demoable out of the box.
 
 ## Tests
 
-Two layers; both must pass before any release.
-
-**Unit tests** (host JVM, fast — run on every change):
-
-```sh
-./gradlew testDebugUnitTest
-```
-
-- `WashTierTest` — pins the retail catalogue: 4 tiers, $10/$20/$30/$40 in
-  cents, ascending/distinct, whole dollars, labels, only Ultimate featured.
-  A failure here means the money changed.
-- `SimulatedPaymentProviderTest` — approval contract and receipt refs.
-- `QuestPaymentProviderTest` — guard rail: the unconfigured Quest provider
-  must fail fast so it can never silently drop sales.
-
-**Instrumented regression suite** (Espresso, runs on emulator or terminal):
+CI gates every push and PR on the fast layer; the Espresso suite runs
+against the QT850-sized emulator (setup in
+[CONTRIBUTING.md](CONTRIBUTING.md)). Reports land in `app/build/reports/`.
 
 ```sh
-ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest
+./gradlew testDebugUnitTest lintDebug                              # fast — CI gate
+ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest   # full GUI suite
 ```
 
-- `MenuScreenTest` — all tiers, prices, and descriptions visible.
-- `ComponentTest` — component-level GUI checks per screen: header (Helios
-  logo, wordmark, prompt), footer tagline, each tier card is a clickable
-  unit with price/name/description, only Ultimate carries the featured
-  styling, price renders larger than and above the name, processing screen
-  (logo, spinner, amount, tier, cancel), and approved/declined result
-  components.
-- `PurchaseFlowTest` — the retail flow end to end with fake providers
-  injected via `PaymentGateway`:
-  - approval charges exactly the tapped tier's price, pulses
-    `WashBayController` with the right tier/receipt, returns to menu
-  - every tier charges its own price
-  - decline shows the reason and does **not** pulse (wash stays locked)
-  - cancel mid-payment returns to menu without pulsing
-  - double-tap protection while a payment is in flight
-
-HTML reports land in `app/build/reports/`.
-
-## Payment integration status
-
-`PaymentProvider` abstracts the payment stack:
-
-- `SimulatedPaymentProvider` — **active**. Approves after 2.5s so the full
-  flow works on any Android device/emulator today.
-- `QuestPaymentProvider` — stub. The QT850's card readers are driven by
-  Quest's own payment application; custom apps hand off the sale amount and
-  receive the result (on-terminal intent contract, or the Cloud EFTPOS API).
-  This requires merchant onboarding with Quest: integration pack, fleet
-  registration, and app deployment via Quest's MAM.
-  Contact Quest: +61 3 8807 4400 / info@questpaymentsystems.com.
-
-Swap the provider in `PaymentGateway.provider` once credentials exist.
+| Suite | Covers |
+|-------|--------|
+| `WashTierTest` | Pins the catalogue: prices in cents, ascending, whole dollars — a failure means the money changed |
+| `SimulatedPaymentProviderTest` · `QuestPaymentProviderTest` | Provider contracts; the Quest stub must fail fast |
+| `MenuScreenTest` · `ComponentTest` | Every screen's components: header brand, tier cards, best-value badge, processing elements, result states |
+| `PurchaseFlowTest` | End to end with injected fakes: right amount charged, pulse on approval **only**, decline keeps the wash locked, cancel and double-tap safety |
 
 ## Deploying to the terminal
 
-1. **Development**: enable ADB on the terminal (Quest supervisor menu),
-   then `adb connect <terminal-ip>` over WiFi and
-   `adb install -r app-debug.apk`. Dev access on a live payment terminal is
-   gated by Quest — request a developer-unlocked unit.
-2. **Production**: QT850 fleets are PCI PTS devices; APKs must be submitted
-   to Quest for signing and are pushed to terminals via Quest's mobile app
-   management (MAM). Release builds here are debug-signed until Quest issues
-   the production signing process.
+1. **Development** — enable ADB in the Quest supervisor menu on a
+   developer-unlocked unit, then `adb connect <terminal-ip>` and
+   `adb install -r app-debug.apk`.
+2. **Production** — QT850 fleets are PCI PTS devices: APKs are submitted to
+   Quest for signing and pushed fleet-wide via Quest's mobile app management
+   (MAM). Release builds stay debug-signed until that pipeline is issued.
 
-## Notes
+## Status
 
-- `WashBayController.pulse()` is the wash unlock integration point; wire
-  it to the site's bay hardware (RS232 / network I/O module to the bay PLC —
-  pulse count typically encodes the tier) for real fulfilment.
-- Branding uses the BP Helios logo (vector, converted from
-  BPositive `flutter_ui/assets/bp_logo.svg`) and BP palette colours. Ensure
-  BP franchise brand approval before production rollout.
+- ✅ Retail flow, kiosk hardening, BP branding, unit + Espresso suites, CI
+- 🔌 Awaiting Quest integration pack → implement `QuestPaymentProvider`
+- 🔌 Awaiting site hardware spec → implement `WashBayController.pulse()`
+- ⚠️ BP Helios branding requires franchise brand approval before rollout
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for project layout, branch/PR
-workflow, emulator setup, and conventions. CI (GitHub Actions) runs unit
-tests, lint, and a debug build on every push and pull request.
+Branch from `main`, keep money maths under test, run the checks, open a PR —
+project layout, emulator setup, and conventions in
+[CONTRIBUTING.md](CONTRIBUTING.md).
