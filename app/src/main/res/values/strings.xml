@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BP Carwash</string>
+    <string name="brand_wordmark">bp</string>
+    <string name="header_title">Carwash</string>
+    <string name="header_subtitle">Select your wash</string>
+
+    <string name="tier_quick_name">Quick Wash</string>
+    <string name="tier_quick_desc">Rinse &amp; dry</string>
+    <string name="tier_express_name">Express Wash</string>
+    <string name="tier_express_desc">Wash, wax &amp; dry</string>
+    <string name="tier_deluxe_name">Deluxe Wash</string>
+    <string name="tier_deluxe_desc">Triple foam, wax &amp; dry</string>
+    <string name="tier_ultimate_name">Ultimate Wash</string>
+    <string name="tier_ultimate_desc">Full detail shine &amp; protect</string>
+
+    <string name="processing_title">Present card</string>
+    <string name="processing_subtitle">Tap, insert or swipe to pay</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="approved_title">Approved</string>
+    <string name="approved_subtitle">Wash unlocked</string>
+    <string name="approved_instruction">Drive through to the wash bay</string>
+
+    <string name="declined_title">Payment declined</string>
+    <string name="declined_subtitle">No charge was made.\nPlease try another card.</string>
+    <string name="try_again">Try again</string>
+
+    <string name="footer_tagline">Powered by Quest QT850</string>
+</resources>

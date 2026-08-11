@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- BP brand palette -->
+    <color name="bp_green">#009900</color>
+    <color name="bp_green_bright">#00B330</color>
+    <color name="bp_green_deep">#00591C</color>
+    <color name="bp_yellow">#FFE600</color>
+    <color name="bp_yellow_deep">#F2C500</color>
+
+    <!-- Premium dark surfaces -->
+    <color name="surface_night">#04140A</color>
+    <color name="surface_night_high">#0A2414</color>
+    <color name="surface_card">#0D2E1A</color>
+    <color name="surface_card_pressed">#134526</color>
+    <color name="stroke_subtle">#1E5A33</color>
+
+    <color name="text_primary">#F4FFF7</color>
+    <color name="text_secondary">#9BC4A8</color>
+
+    <!-- Launcher icon: Helios sits on white per BP brand usage -->
+    <color name="icon_background">#FFFFFF</color>
+
+    <color name="success">#2ADB6A</color>
+    <color name="error">#FF5A5A</color>
+</resources>
