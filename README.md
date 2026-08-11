@@ -67,7 +67,7 @@ The QT850 is a payment terminal, not a phone
 app/src/main/java/com/bp/carwash/
 ├── MainActivity.kt          # single-activity kiosk UI: menu → processing → result
 ├── WashTier.kt              # the catalogue — tiers & prices, money in Long cents
-├── WashBayController.kt     # wash unlock pulse (site hardware integration point)
+├── WashBayController.kt     # coin-pulse wash unlock (emulates a coin acceptor)
 └── payment/
     ├── PaymentProvider.kt   # suspend fun purchase(amountCents, ref): PaymentResult
     ├── PaymentGateway.kt    # provider selection — the single swap point
@@ -85,9 +85,16 @@ and the Quest stub throws rather than pretend — it can never be swapped in
 half-configured and silently drop sales. The swap point is one line:
 `PaymentGateway.provider`.
 
-**Wash unlock.** `WashBayController.pulse()` fires on approval and is the
-single integration point for site hardware — RS232 or a network I/O module
-to the bay PLC, with pulse count encoding the tier.
+**Wash unlock — coin-pulse.** On approval the app emulates a coin acceptor,
+the electrical convention carwash entry controllers (Dixmor, GinSan,
+Hamilton and similar) already understand: a dry-contact / open-collector
+line into the controller's **coin input**, pulsed once per coin-value of
+credit — a $30 wash at the default $1/pulse is a 30-pulse train, 100 ms
+closed / 100 ms open per pulse. Coin value and pulse timing are
+site-configurable via `CoinPulseConfig`; the physical line is behind the
+one-method `PulseOutput` interface (wire it to the QT850's RS232 port
+driving a relay module, or a network I/O module at the bay). No controller
+reprogramming needed — the bay credits pulses exactly as it would coins.
 
 ## Quick start
 
@@ -115,6 +122,7 @@ ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest   # full GUI su
 | Suite | Covers |
 |-------|--------|
 | `WashTierTest` | Pins the catalogue: prices in cents, ascending, whole dollars — a failure means the money changed |
+| `WashBayControllerTest` | Coin-pulse electrical contract: one pulse per dollar (per tier), configurable coin value, closed/open alternation ending open, train duration, indivisible coin values rejected |
 | `SimulatedPaymentProviderTest` · `QuestPaymentProviderTest` | Provider contracts; the Quest stub must fail fast |
 | `MenuScreenTest` · `ComponentTest` | Every screen's components: header brand, tier cards, best-value badge, processing elements, result states |
 | `PurchaseFlowTest` | End to end with injected fakes: right amount charged, pulse on approval **only**, decline keeps the wash locked, cancel and double-tap safety |
@@ -132,7 +140,7 @@ ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest   # full GUI su
 
 - ✅ Retail flow, kiosk hardening, BP branding, unit + Espresso suites, CI
 - 🔌 Awaiting Quest integration pack → implement `QuestPaymentProvider`
-- 🔌 Awaiting site hardware spec → implement `WashBayController.pulse()`
+- 🔌 Awaiting site hardware spec → implement `PulseOutput` (relay/opto line to the coin input)
 - ⚠️ BP Helios branding requires franchise brand approval before rollout
 
 ## Contributing

@@ -1,36 +1,92 @@
 package com.bp.carwash
 
 import android.util.Log
+import kotlinx.coroutines.delay
 
 /**
- * Unlocks the purchased wash by pulsing the carwash controller.
+ * Coin-pulse wash unlock — the electrical convention used by carwash entry
+ * controllers (Dixmor, GinSan, Hamilton and similar): the payment device
+ * emulates a coin acceptor, pulsing the controller's coin input once per
+ * coin-value of credit. A $30 wash at $1/pulse is a 30-pulse train.
  *
- * Wire [pulse] to the site's bay hardware — typically either:
- *  - a relay/pulse interface (e.g. the terminal's serial port RS232 per the
- *    QT850 spec, or a network I/O module driving the bay PLC), or
- *  - the wash controller vendor's local API.
+ * Electrical contract (typical coin-acceptor spec):
+ *  - dry relay contact or open-collector output into the coin input
+ *  - contact closed [CoinPulseConfig.pulseWidthMs], open
+ *    [CoinPulseConfig.pulseGapMs] between pulses
+ *  - the controller counts closures; credit = pulses × coin value
  */
+data class CoinPulseConfig(
+    /** Credit per pulse in cents — must divide every tier price. Site-configurable. */
+    val coinValueCents: Long = 100,
+    /** Contact-closed time per pulse. */
+    val pulseWidthMs: Long = 100,
+    /** Contact-open time between pulses. */
+    val pulseGapMs: Long = 100,
+)
+
+/** The physical coin line. Implementations drive a relay/opto output. */
+interface PulseOutput {
+    /** Drive the coin line: true = contact closed. Must be main-safe. */
+    suspend fun setLine(closed: Boolean)
+}
+
+/**
+ * Placeholder output: logs line transitions. Replace with the site's real
+ * output — the QT850's RS232 port driving a relay module, or a network I/O
+ * module wired to the bay controller's coin input.
+ */
+class LogPulseOutput : PulseOutput {
+    override suspend fun setLine(closed: Boolean) {
+        Log.i(TAG, if (closed) "coin line CLOSED" else "coin line OPEN")
+    }
+
+    private companion object {
+        const val TAG = "PulseOutput"
+    }
+}
+
 object WashBayController {
 
-    private const val TAG = "WashBayController"
+    var config = CoinPulseConfig()
+    var output: PulseOutput = LogPulseOutput()
 
-    data class Pulse(val tier: WashTier, val receiptRef: String)
+    data class PulseTrain(val tier: WashTier, val receiptRef: String, val pulseCount: Int)
 
-    /** Last pulse fired — observable so tests can assert unlock behaviour. */
+    /** Last train fired (recorded at start of emission) — observable for tests. */
     @Volatile
-    var lastPulse: Pulse? = null
+    var lastPulse: PulseTrain? = null
         private set
 
-    /** Fires the unlock pulse for the given wash tier. */
-    fun pulse(tier: WashTier, receiptRef: String) {
-        lastPulse = Pulse(tier, receiptRef)
-        // TODO(site-integration): replace with the real pulse output.
-        // Pulse count/duration usually encodes the tier on carwash entry
-        // controllers, e.g. QUICK=1 pulse .. ULTIMATE=4 pulses.
-        Log.i(TAG, "PULSE wash unlock: tier=${tier.name} ref=$receiptRef")
+    /** Pulses required to credit [tier] at the configured coin value. */
+    fun pulseCountFor(tier: WashTier): Int {
+        require(tier.priceCents % config.coinValueCents == 0L) {
+            "Tier ${tier.name} price ${tier.priceCents}c is not a multiple of " +
+                "coin value ${config.coinValueCents}c"
+        }
+        return (tier.priceCents / config.coinValueCents).toInt()
+    }
+
+    /**
+     * Emits the coin-pulse train for the purchased tier. Suspends for the
+     * full train duration (count × (width + gap)); callers fire it from a
+     * coroutine so the UI is never blocked. The train must run to
+     * completion once payment is captured — keep the emitting scope alive
+     * for its duration.
+     */
+    suspend fun pulse(tier: WashTier, receiptRef: String) {
+        val count = pulseCountFor(tier)
+        lastPulse = PulseTrain(tier, receiptRef, count)
+        repeat(count) {
+            output.setLine(true)
+            delay(config.pulseWidthMs)
+            output.setLine(false)
+            delay(config.pulseGapMs)
+        }
     }
 
     fun resetForTest() {
         lastPulse = null
+        config = CoinPulseConfig()
+        output = LogPulseOutput()
     }
 }

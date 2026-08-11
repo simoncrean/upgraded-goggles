@@ -12,7 +12,8 @@
 app/src/main/java/com/bp/carwash/
   MainActivity.kt          # single-activity kiosk UI (menu / processing / result)
   WashTier.kt              # retail catalogue — tiers and prices (cents)
-  WashBayController.kt     # wash unlock pulse (site hardware integration point)
+  WashBayController.kt     # coin-pulse wash unlock: emulates a coin acceptor
+                           #   (CoinPulseConfig + PulseOutput = hardware seam)
   payment/
     PaymentProvider.kt     # payment abstraction + result types
     PaymentGateway.kt      # provider selection (swap point for Quest)

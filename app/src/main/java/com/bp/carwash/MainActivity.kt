@@ -91,8 +91,9 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun showApproved(tier: WashTier, receiptRef: String) {
-        // The app pulses the carwash controller directly — no customer code.
-        WashBayController.pulse(tier, receiptRef)
+        // Fire the coin-pulse train on its own job: it must not delay the
+        // approved screen, and OK/timeout must not cancel it mid-credit.
+        lifecycleScope.launch { WashBayController.pulse(tier, receiptRef) }
 
         findViewById<TextView>(R.id.resultIcon).apply {
             text = "✓"
