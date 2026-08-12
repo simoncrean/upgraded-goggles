@@ -1,6 +1,7 @@
 package com.bp.carwash
 
 import android.util.Log
+import com.bp.carwash.catalog.Product
 import kotlinx.coroutines.delay
 
 /**
@@ -50,20 +51,20 @@ object WashBayController {
     var config = CoinPulseConfig()
     var output: PulseOutput = LogPulseOutput()
 
-    data class PulseTrain(val tier: WashTier, val receiptRef: String, val pulseCount: Int)
+    data class PulseTrain(val productId: String, val receiptRef: String, val pulseCount: Int)
 
     /** Last train fired (recorded at start of emission) — observable for tests. */
     @Volatile
     var lastPulse: PulseTrain? = null
         private set
 
-    /** Pulses required to credit [tier] at the configured coin value. */
-    fun pulseCountFor(tier: WashTier): Int {
-        require(tier.priceCents % config.coinValueCents == 0L) {
-            "Tier ${tier.name} price ${tier.priceCents}c is not a multiple of " +
-                "coin value ${config.coinValueCents}c"
+    /** Pulses required to credit [product] at the configured coin value. */
+    fun pulseCountFor(product: Product): Int {
+        require(product.priceCents % config.coinValueCents == 0L) {
+            "Product ${product.id} price ${product.priceCents}c is not a multiple " +
+                "of coin value ${config.coinValueCents}c"
         }
-        return (tier.priceCents / config.coinValueCents).toInt()
+        return (product.priceCents / config.coinValueCents).toInt()
     }
 
     /**
@@ -73,9 +74,9 @@ object WashBayController {
      * completion once payment is captured — keep the emitting scope alive
      * for its duration.
      */
-    suspend fun pulse(tier: WashTier, receiptRef: String) {
-        val count = pulseCountFor(tier)
-        lastPulse = PulseTrain(tier, receiptRef, count)
+    suspend fun pulse(product: Product, receiptRef: String) {
+        val count = pulseCountFor(product)
+        lastPulse = PulseTrain(product.id, receiptRef, count)
         repeat(count) {
             output.setLine(true)
             delay(config.pulseWidthMs)

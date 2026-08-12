@@ -56,7 +56,7 @@ class PurchaseFlowTest {
             // The wash bay must be pulsed for the purchased tier:
             // $30 Deluxe at the default $1/pulse coin value = 30 pulses.
             val pulse = WashBayController.lastPulse
-            assertEquals(WashTier.DELUXE, pulse?.tier)
+            assertEquals("deluxe", pulse?.productId)
             assertEquals("TEST-3000", pulse?.receiptRef)
             assertEquals(30, pulse?.pulseCount)
 

@@ -13,6 +13,8 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
+import com.bp.carwash.catalog.CatalogProvider
+import com.bp.carwash.catalog.Product
 import com.bp.carwash.payment.PaymentGateway
 import com.bp.carwash.payment.PaymentResult
 import kotlinx.coroutines.Job
@@ -29,6 +31,9 @@ class MainActivity : AppCompatActivity() {
         /** Unattended kiosk: fall back to the menu if a screen is left idle. */
         const val RESULT_TIMEOUT_MS = 30_000L
     }
+
+    private val cardIds =
+        listOf(R.id.tierQuick, R.id.tierExpress, R.id.tierDeluxe, R.id.tierUltimate)
 
     private lateinit var flipper: ViewFlipper
     private var activeJob: Job? = null
@@ -48,41 +53,57 @@ class MainActivity : AppCompatActivity() {
 
         flipper = findViewById(R.id.flipper)
 
-        bindTier(R.id.tierQuick, WashTier.QUICK)
-        bindTier(R.id.tierExpress, WashTier.EXPRESS)
-        bindTier(R.id.tierDeluxe, WashTier.DELUXE)
-        bindTier(R.id.tierUltimate, WashTier.ULTIMATE)
+        loadCatalog()
 
         findViewById<Button>(R.id.cancelButton).setOnClickListener { returnToMenu() }
         findViewById<Button>(R.id.doneButton).setOnClickListener { returnToMenu() }
     }
 
-    private fun bindTier(includeId: Int, tier: WashTier) {
-        val card = findViewById<View>(includeId)
-        card.findViewById<TextView>(R.id.tierName).text = getString(tier.nameRes)
-        card.findViewById<TextView>(R.id.tierDesc).text = getString(tier.descRes)
-        card.findViewById<TextView>(R.id.tierPrice).text = tier.priceLabel
-        if (tier.featured) {
-            card.setBackgroundResource(R.drawable.bg_tier_card_featured)
-            card.findViewById<TextView>(R.id.tierBadge).visibility = View.VISIBLE
+    /** Products come from the catalogue (bundled JSON today, API later). */
+    private fun loadCatalog() {
+        lifecycleScope.launch {
+            val products = CatalogProvider.source(this@MainActivity).fetch()
+                .productsForDisplay()
+            cardIds.forEachIndexed { index, cardId ->
+                val card = findViewById<View>(cardId)
+                val product = products.getOrNull(index)
+                if (product == null) {
+                    card.visibility = View.INVISIBLE
+                } else {
+                    card.visibility = View.VISIBLE
+                    bindCard(card, product)
+                }
+            }
         }
-        // Styling variant exposed for UI tests (drawable identity isn't
-        // comparable across inflations).
-        card.tag = if (tier.featured) "tier_card_featured" else "tier_card_regular"
-        card.setOnClickListener { startPurchase(tier) }
     }
 
-    private fun startPurchase(tier: WashTier) {
+    private fun bindCard(card: View, product: Product) {
+        card.findViewById<TextView>(R.id.tierName).text = product.name
+        card.findViewById<TextView>(R.id.tierDesc).text = product.description
+        card.findViewById<TextView>(R.id.tierPrice).text = product.priceLabel
+        card.setBackgroundResource(
+            if (product.featured) R.drawable.bg_tier_card_featured
+            else R.drawable.bg_tier_card
+        )
+        card.findViewById<TextView>(R.id.tierBadge).visibility =
+            if (product.featured) View.VISIBLE else View.GONE
+        // Styling variant exposed for UI tests (drawable identity isn't
+        // comparable across inflations).
+        card.tag = if (product.featured) "tier_card_featured" else "tier_card_regular"
+        card.setOnClickListener { startPurchase(product) }
+    }
+
+    private fun startPurchase(product: Product) {
         if (flipper.displayedChild != SCREEN_MENU) return
 
-        findViewById<TextView>(R.id.processingAmount).text = tier.priceLabel
-        findViewById<TextView>(R.id.processingTier).text = getString(tier.nameRes)
+        findViewById<TextView>(R.id.processingAmount).text = product.priceLabel
+        findViewById<TextView>(R.id.processingTier).text = product.name
         flipper.displayedChild = SCREEN_PROCESSING
 
         activeJob = lifecycleScope.launch {
             val reference = "BPCW-${System.currentTimeMillis()}"
-            when (val result = PaymentGateway.provider.purchase(tier.priceCents, reference)) {
-                is PaymentResult.Approved -> showApproved(tier, result.receiptRef)
+            when (val result = PaymentGateway.provider.purchase(product.priceCents, reference)) {
+                is PaymentResult.Approved -> showApproved(product, result.receiptRef)
                 is PaymentResult.Declined -> showDeclined(result.reason)
                 PaymentResult.Cancelled -> returnToMenu()
             }
@@ -90,10 +111,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showApproved(tier: WashTier, receiptRef: String) {
+    private fun showApproved(product: Product, receiptRef: String) {
         // Fire the coin-pulse train on its own job: it must not delay the
         // approved screen, and OK/timeout must not cancel it mid-credit.
-        lifecycleScope.launch { WashBayController.pulse(tier, receiptRef) }
+        lifecycleScope.launch { WashBayController.pulse(product, receiptRef) }
 
         findViewById<TextView>(R.id.resultIcon).apply {
             text = "✓"

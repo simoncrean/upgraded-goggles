@@ -11,9 +11,11 @@
 ```
 app/src/main/java/com/bp/carwash/
   MainActivity.kt          # single-activity kiosk UI (menu / processing / result)
-  WashTier.kt              # retail catalogue — tiers and prices (cents)
   WashBayController.kt     # coin-pulse wash unlock: emulates a coin acceptor
                            #   (CoinPulseConfig + PulseOutput = hardware seam)
+  catalog/
+    ProductCatalog.kt      # Product model + catalogue validation (money in cents)
+    CatalogSource.kt       # bundled assets/catalog.json now, catalogue API later
   payment/
     PaymentProvider.kt     # payment abstraction + result types
     PaymentGateway.kt      # provider selection (swap point for Quest)
@@ -27,8 +29,8 @@ docs/                      # demo recordings, assets
 ## Workflow
 
 1. Branch from `main`: `feature/<short-name>` or `fix/<short-name>`.
-2. Make the change, keeping the catalogue (`WashTier`) and any money maths
-   covered by unit tests.
+2. Make the change, keeping the catalogue (`assets/catalog.json` +
+   `CatalogTest`) and any money maths covered by unit tests.
 3. Run the checks (below) before opening a PR. CI runs the same on every PR.
 4. PRs need a green build; squash-merge to keep history linear.
 

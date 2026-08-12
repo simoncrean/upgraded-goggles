@@ -1,5 +1,6 @@
 package com.bp.carwash
 
+import com.bp.carwash.catalog.Product
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -24,6 +25,14 @@ class WashBayControllerTest {
 
     private lateinit var line: RecordingOutput
 
+    private fun product(id: String, cents: Long) =
+        Product(id, "N", "D", priceCents = cents, displayOrder = 1)
+
+    private val quick = product("quick", 10_00)
+    private val express = product("express", 20_00)
+    private val deluxe = product("deluxe", 30_00)
+    private val ultimate = product("ultimate", 40_00)
+
     @Before
     fun setUp() {
         WashBayController.resetForTest()
@@ -38,32 +47,32 @@ class WashBayControllerTest {
 
     @Test
     fun `default one dollar coin value gives one pulse per dollar`() {
-        assertEquals(10, WashBayController.pulseCountFor(WashTier.QUICK))
-        assertEquals(20, WashBayController.pulseCountFor(WashTier.EXPRESS))
-        assertEquals(30, WashBayController.pulseCountFor(WashTier.DELUXE))
-        assertEquals(40, WashBayController.pulseCountFor(WashTier.ULTIMATE))
+        assertEquals(10, WashBayController.pulseCountFor(quick))
+        assertEquals(20, WashBayController.pulseCountFor(express))
+        assertEquals(30, WashBayController.pulseCountFor(deluxe))
+        assertEquals(40, WashBayController.pulseCountFor(ultimate))
     }
 
     @Test
     fun `five dollar coin value shortens the train`() {
         WashBayController.config = CoinPulseConfig(coinValueCents = 5_00)
-        assertEquals(2, WashBayController.pulseCountFor(WashTier.QUICK))
-        assertEquals(4, WashBayController.pulseCountFor(WashTier.EXPRESS))
-        assertEquals(6, WashBayController.pulseCountFor(WashTier.DELUXE))
-        assertEquals(8, WashBayController.pulseCountFor(WashTier.ULTIMATE))
+        assertEquals(2, WashBayController.pulseCountFor(quick))
+        assertEquals(4, WashBayController.pulseCountFor(express))
+        assertEquals(6, WashBayController.pulseCountFor(deluxe))
+        assertEquals(8, WashBayController.pulseCountFor(ultimate))
     }
 
     @Test
     fun `coin value that does not divide a tier price is rejected`() {
         WashBayController.config = CoinPulseConfig(coinValueCents = 3_00)
         assertThrows(IllegalArgumentException::class.java) {
-            WashBayController.pulseCountFor(WashTier.QUICK)
+            WashBayController.pulseCountFor(quick)
         }
     }
 
     @Test
     fun `train alternates closed-open and leaves the line open`() = runTest {
-        WashBayController.pulse(WashTier.QUICK, "ref")
+        WashBayController.pulse(quick, "ref")
 
         // 10 pulses = 20 transitions: closed, open, closed, open, ...
         assertEquals(20, line.transitions.size)
@@ -80,16 +89,16 @@ class WashBayControllerTest {
         )
         WashBayController.output = line
         val start = currentTime
-        WashBayController.pulse(WashTier.DELUXE, "ref")
+        WashBayController.pulse(deluxe, "ref")
         // 30 pulses × (100ms closed + 100ms open) = 6000ms
         assertEquals(6_000, currentTime - start)
     }
 
     @Test
     fun `train is recorded with tier receipt and count`() = runTest {
-        WashBayController.pulse(WashTier.ULTIMATE, "RCPT-1")
+        WashBayController.pulse(ultimate, "RCPT-1")
         val train = WashBayController.lastPulse!!
-        assertEquals(WashTier.ULTIMATE, train.tier)
+        assertEquals("ultimate", train.productId)
         assertEquals("RCPT-1", train.receiptRef)
         assertEquals(40, train.pulseCount)
     }

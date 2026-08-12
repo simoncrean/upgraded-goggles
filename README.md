@@ -12,7 +12,7 @@ one flow.
 [![CI](https://github.com/simoncrean/upgraded-goggles/actions/workflows/ci.yml/badge.svg)](https://github.com/simoncrean/upgraded-goggles/actions/workflows/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-Android%209%2B-3DDC84?logo=android&logoColor=white)
 ![Target](https://img.shields.io/badge/target-Quest%20QT850-009900)
-![Tests](https://img.shields.io/badge/tests-9%20unit%20·%2015%20espresso-FFE600)
+![Tests](https://img.shields.io/badge/tests-21%20unit%20·%2016%20espresso-FFE600)
 
 <img src="docs/demo.gif" width="300" alt="Two purchases end to end on the QT850-sized emulator: Deluxe $30 and Ultimate $40, each approving and unlocking the wash" />
 
@@ -66,14 +66,43 @@ The QT850 is a payment terminal, not a phone
 ```
 app/src/main/java/com/bp/carwash/
 ├── MainActivity.kt          # single-activity kiosk UI: menu → processing → result
-├── WashTier.kt              # the catalogue — tiers & prices, money in Long cents
 ├── WashBayController.kt     # coin-pulse wash unlock (emulates a coin acceptor)
+├── catalog/
+│   ├── ProductCatalog.kt    # data model: Product + catalogue validation
+│   └── CatalogSource.kt     # bundled JSON today, catalogue API later
 └── payment/
     ├── PaymentProvider.kt   # suspend fun purchase(amountCents, ref): PaymentResult
     ├── PaymentGateway.kt    # provider selection — the single swap point
     ├── SimulatedPaymentProvider.kt   # active: approves in 2.5s, runs anywhere
     └── QuestPaymentProvider.kt       # fail-fast stub until Quest onboarding
 ```
+
+**Products are data, not code.** The menu renders from a catalogue document
+(`assets/catalog.json`) — the exact shape a future catalogue API will
+serve:
+
+```json
+{
+  "schemaVersion": 1,
+  "currency": "AUD",
+  "updatedAt": "2026-08-12T00:00:00Z",
+  "products": [
+    { "id": "deluxe", "name": "Deluxe Wash", "description": "Triple foam, wax & dry",
+      "priceCents": 3000, "displayOrder": 3 },
+    { "id": "ultimate", "name": "Ultimate Wash", "description": "Full detail shine & protect",
+      "priceCents": 4000, "displayOrder": 4, "featured": true }
+  ]
+}
+```
+
+Money is integer cents; parsing ignores unknown keys so newer API fields
+never break deployed terminals; validation rejects catalogues the menu
+can't render (empty, >4 products, duplicate ids, non-positive prices, more
+than one featured). `CatalogSource` mirrors the payment pattern —
+`BundledCatalogSource` is active (terminals must sell offline), and
+`ApiCatalogSource` is a fail-fast stub until the API contract is defined
+(expected: `GET /catalog` returning this document; fetch-then-cache with
+bundled fallback).
 
 **Payments.** The QT850's card readers are driven by Quest's own payment
 application; custom apps hand over the sale amount and receive the result
@@ -121,7 +150,7 @@ ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest   # full GUI su
 
 | Suite | Covers |
 |-------|--------|
-| `WashTierTest` | Pins the catalogue: prices in cents, ascending, whole dollars — a failure means the money changed |
+| `CatalogTest` | Pins the bundled catalogue (ids, $10/$20/$30/$40, single featured) and the wire format: unknown-key tolerance, price labels, validation rejections |
 | `WashBayControllerTest` | Coin-pulse electrical contract: one pulse per dollar (per tier), configurable coin value, closed/open alternation ending open, train duration, indivisible coin values rejected |
 | `SimulatedPaymentProviderTest` · `QuestPaymentProviderTest` | Provider contracts; the Quest stub must fail fast |
 | `MenuScreenTest` · `ComponentTest` | Every screen's components: header brand, tier cards, best-value badge, processing elements, result states |

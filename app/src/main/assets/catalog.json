@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "currency": "AUD",
+  "updatedAt": "2026-08-12T00:00:00Z",
+  "products": [
+    {
+      "id": "quick",
+      "name": "Quick Wash",
+      "description": "Rinse & dry",
+      "priceCents": 1000,
+      "displayOrder": 1
+    },
+    {
+      "id": "express",
+      "name": "Express Wash",
+      "description": "Wash, wax & dry",
+      "priceCents": 2000,
+      "displayOrder": 2
+    },
+    {
+      "id": "deluxe",
+      "name": "Deluxe Wash",
+      "description": "Triple foam, wax & dry",
+      "priceCents": 3000,
+      "displayOrder": 3
+    },
+    {
+      "id": "ultimate",
+      "name": "Ultimate Wash",
+      "description": "Full detail shine & protect",
+      "priceCents": 4000,
+      "displayOrder": 4,
+      "featured": true
+    }
+  ]
+}
