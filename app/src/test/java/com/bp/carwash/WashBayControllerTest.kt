@@ -26,7 +26,7 @@ class WashBayControllerTest {
     private lateinit var line: RecordingOutput
 
     private fun product(id: String, cents: Long) =
-        Product(id, "N", "D", priceCents = cents, displayOrder = 1)
+        Product(id, "SKU-$id", "N", "D", priceCents = cents, displayOrder = 1)
 
     private val quick = product("quick", 10_00)
     private val express = product("express", 20_00)

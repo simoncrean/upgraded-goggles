@@ -101,7 +101,9 @@ class MainActivity : AppCompatActivity() {
         flipper.displayedChild = SCREEN_PROCESSING
 
         activeJob = lifecycleScope.launch {
-            val reference = "BPCW-${System.currentTimeMillis()}"
+            // SKU on the reference ties the transaction to the product
+            // for back-office reconciliation.
+            val reference = "${product.sku}-${System.currentTimeMillis()}"
             when (val result = PaymentGateway.provider.purchase(product.priceCents, reference)) {
                 is PaymentResult.Approved -> showApproved(product, result.receiptRef)
                 is PaymentResult.Declined -> showDeclined(result.reason)

@@ -5,6 +5,7 @@
   "products": [
     {
       "id": "quick",
+      "sku": "BPCW-0001",
       "name": "Quick Wash",
       "description": "Rinse & dry",
       "priceCents": 1000,
@@ -12,6 +13,7 @@
     },
     {
       "id": "express",
+      "sku": "BPCW-0002",
       "name": "Express Wash",
       "description": "Wash, wax & dry",
       "priceCents": 2000,
@@ -19,6 +21,7 @@
     },
     {
       "id": "deluxe",
+      "sku": "BPCW-0003",
       "name": "Deluxe Wash",
       "description": "Triple foam, wax & dry",
       "priceCents": 3000,
@@ -26,6 +29,7 @@
     },
     {
       "id": "ultimate",
+      "sku": "BPCW-0004",
       "name": "Ultimate Wash",
       "description": "Full detail shine & protect",
       "priceCents": 4000,
