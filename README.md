@@ -12,7 +12,7 @@ one flow.
 [![CI](https://github.com/simoncrean/upgraded-goggles/actions/workflows/ci.yml/badge.svg)](https://github.com/simoncrean/upgraded-goggles/actions/workflows/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-Android%209%2B-3DDC84?logo=android&logoColor=white)
 ![Target](https://img.shields.io/badge/target-Quest%20QT850-009900)
-![Tests](https://img.shields.io/badge/tests-21%20unit%20·%2016%20espresso-FFE600)
+![Tests](https://img.shields.io/badge/tests-24%20unit%20·%2016%20espresso-FFE600)
 
 <img src="docs/demo.gif" width="300" alt="Two purchases end to end on the QT850-sized emulator: Deluxe $30 and Ultimate $40, each approving and unlocking the wash" />
 
@@ -87,15 +87,19 @@ serve:
   "currency": "AUD",
   "updatedAt": "2026-08-12T00:00:00Z",
   "products": [
-    { "id": "deluxe", "name": "Deluxe Wash", "description": "Triple foam, wax & dry",
-      "priceCents": 3000, "displayOrder": 3 },
-    { "id": "ultimate", "name": "Ultimate Wash", "description": "Full detail shine & protect",
-      "priceCents": 4000, "displayOrder": 4, "featured": true }
+    { "id": "deluxe", "sku": "BPCW-0003", "name": "Deluxe Wash",
+      "description": "Triple foam, wax & dry", "priceCents": 3000, "displayOrder": 3 },
+    { "id": "ultimate", "sku": "BPCW-0004", "name": "Ultimate Wash",
+      "description": "Full detail shine & protect", "priceCents": 4000,
+      "displayOrder": 4, "featured": true }
   ]
 }
 ```
 
-Money is integer cents; parsing ignores unknown keys so newer API fields
+Each product carries a back-office **SKU** (assigned by the catalogue
+owner, never invented on the terminal) which rides on every payment
+reference for reconciliation. Money is integer cents; parsing ignores
+unknown keys so newer API fields
 never break deployed terminals; validation rejects catalogues the menu
 can't render (empty, >4 products, duplicate ids, non-positive prices, more
 than one featured). `CatalogSource` mirrors the payment pattern —

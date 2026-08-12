@@ -49,9 +49,10 @@ class PurchaseFlowTest {
             onView(withText("Wash unlocked")).check(matches(isDisplayed()))
             onView(withText("Drive through to the wash bay")).check(matches(isDisplayed()))
 
-            // Exactly the $30 Deluxe price must reach the payment provider.
+            // Exactly the $30 Deluxe price must reach the payment provider,
+            // with the product SKU on the reference for reconciliation.
             assertEquals(30_00L, provider.lastAmountCents)
-            assertTrue(provider.lastReference!!.startsWith("BPCW-"))
+            assertTrue(provider.lastReference!!.startsWith("BPCW-0003-"))
 
             // The wash bay must be pulsed for the purchased tier:
             // $30 Deluxe at the default $1/pulse coin value = 30 pulses.

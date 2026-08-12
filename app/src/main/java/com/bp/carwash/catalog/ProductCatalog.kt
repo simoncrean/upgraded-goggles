@@ -10,8 +10,14 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Product(
-    /** Stable identifier, e.g. "deluxe" — used in receipts and telemetry. */
+    /** Stable slug, e.g. "deluxe" — used internally and in telemetry. */
     val id: String,
+    /**
+     * Product identifier from the back office (SKU/PLU), e.g. "BPCW-0003".
+     * Carried on payment references for reconciliation; assigned by the
+     * catalogue owner, never invented on the terminal.
+     */
+    val sku: String,
     val name: String,
     val description: String,
     /** Money is integer cents, never floats. */
@@ -50,7 +56,11 @@ data class ProductCatalog(
         require(products.map { it.id }.distinct().size == products.size) {
             "Catalogue has duplicate product ids"
         }
+        require(products.map { it.sku }.distinct().size == products.size) {
+            "Catalogue has duplicate product SKUs"
+        }
         products.forEach {
+            require(it.sku.isNotBlank()) { "Product ${it.id} has a blank SKU" }
             require(it.priceCents > 0) { "Product ${it.id} has non-positive price" }
         }
         require(products.count { it.featured } <= 1) {

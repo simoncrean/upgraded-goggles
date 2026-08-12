@@ -40,6 +40,15 @@ class CatalogTest {
     }
 
     @Test
+    fun `bundled products carry back-office skus`() {
+        val skus = bundled.productsForDisplay().associate { it.id to it.sku }
+        assertEquals("BPCW-0001", skus["quick"])
+        assertEquals("BPCW-0002", skus["express"])
+        assertEquals("BPCW-0003", skus["deluxe"])
+        assertEquals("BPCW-0004", skus["ultimate"])
+    }
+
+    @Test
     fun `bundled catalogue features only ultimate`() {
         assertEquals(
             listOf("ultimate"),
@@ -64,7 +73,7 @@ class CatalogTest {
               "schemaVersion": 2,
               "someFutureField": {"nested": true},
               "products": [
-                {"id": "a", "name": "A", "description": "d",
+                {"id": "a", "sku": "SKU-A", "name": "A", "description": "d",
                  "priceCents": 500, "displayOrder": 1, "newBadgeType": "gold"}
               ]
             }
@@ -77,7 +86,7 @@ class CatalogTest {
     @Test
     fun `price label renders whole dollars and cent amounts`() {
         fun product(cents: Long) =
-            Product("p", "P", "", priceCents = cents, displayOrder = 1)
+            Product("p", "SKU-P", "P", "", priceCents = cents, displayOrder = 1)
         assertEquals("$10", product(10_00).priceLabel)
         assertEquals("$12.50", product(12_50).priceLabel)
         assertEquals("$9.05", product(9_05).priceLabel)
@@ -85,8 +94,13 @@ class CatalogTest {
 
     // ---------- Validation ----------
 
-    private fun product(id: String, order: Int = 1, cents: Long = 100, featured: Boolean = false) =
-        Product(id, "N", "D", priceCents = cents, displayOrder = order, featured = featured)
+    private fun product(
+        id: String,
+        order: Int = 1,
+        cents: Long = 100,
+        featured: Boolean = false,
+        sku: String = "SKU-$id",
+    ) = Product(id, sku, "N", "D", priceCents = cents, displayOrder = order, featured = featured)
 
     @Test
     fun `empty catalogue is rejected`() {
@@ -108,6 +122,22 @@ class CatalogTest {
         assertThrows(IllegalArgumentException::class.java) {
             ProductCatalog(products = listOf(product("a"), product("a", order = 2)))
                 .productsForDisplay()
+        }
+    }
+
+    @Test
+    fun `duplicate skus are rejected`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            ProductCatalog(
+                products = listOf(product("a", sku = "X"), product("b", order = 2, sku = "X"))
+            ).productsForDisplay()
+        }
+    }
+
+    @Test
+    fun `blank sku is rejected`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            ProductCatalog(products = listOf(product("a", sku = " "))).productsForDisplay()
         }
     }
 
