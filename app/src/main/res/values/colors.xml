@@ -3,23 +3,28 @@
     <!-- BP brand palette -->
     <color name="bp_green">#009900</color>
     <color name="bp_green_bright">#00B330</color>
-    <color name="bp_green_deep">#00591C</color>
     <color name="bp_yellow">#FFE600</color>
-    <color name="bp_yellow_deep">#F2C500</color>
 
-    <!-- Premium dark surfaces -->
-    <color name="surface_night">#04140A</color>
-    <color name="surface_night_high">#0A2414</color>
-    <color name="surface_card">#0D2E1A</color>
-    <color name="surface_card_pressed">#134526</color>
-    <color name="stroke_subtle">#1E5A33</color>
+    <!-- Bright BP gradient background (lime → green) -->
+    <color name="gradient_start">#CFE06A</color>
+    <color name="gradient_mid">#55A63B</color>
+    <color name="gradient_end">#147A33</color>
 
-    <color name="text_primary">#F4FFF7</color>
-    <color name="text_secondary">#9BC4A8</color>
+    <!-- Ink: dark green text on light surfaces -->
+    <color name="ink">#0B3A1C</color>
+    <color name="ink_soft">#33613F</color>
+    <color name="ink_faint">#7A0B3A1C</color>
+
+    <!-- Frosted light cards over the gradient -->
+    <color name="card_frost">#CCFFFFFF</color>
+    <color name="card_frost_pressed">#F2FFFFFF</color>
+    <color name="card_featured">#FFFFFF</color>
+    <color name="stroke_frost">#4DFFFFFF</color>
 
     <!-- Launcher icon: Helios sits on white per BP brand usage -->
     <color name="icon_background">#FFFFFF</color>
 
-    <color name="success">#2ADB6A</color>
-    <color name="error">#FF5A5A</color>
+    <color name="accent_green">#0C8A34</color>
+    <color name="success">#0C8A34</color>
+    <color name="error">#D93025</color>
 </resources>
