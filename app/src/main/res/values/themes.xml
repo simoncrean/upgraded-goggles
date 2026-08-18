@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.BpCarwash" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.BpCarwash" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/bp_green</item>
         <item name="colorSecondary">@color/bp_yellow</item>
-        <item name="android:colorBackground">@color/surface_night</item>
-        <item name="android:statusBarColor">@color/surface_night</item>
-        <item name="android:navigationBarColor">@color/surface_night</item>
+        <item name="android:colorBackground">@color/gradient_mid</item>
+        <item name="android:statusBarColor">@color/gradient_start</item>
+        <item name="android:navigationBarColor">@color/gradient_end</item>
         <item name="android:windowBackground">@drawable/bg_main</item>
+        <item name="android:fontFamily">@font/bp_sans</item>
+        <item name="fontFamily">@font/bp_sans</item>
     </style>
 </resources>

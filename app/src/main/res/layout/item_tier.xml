@@ -14,10 +14,10 @@
         android:layout_gravity="top|center_horizontal"
         android:layout_marginTop="8dp"
         android:background="@drawable/bg_badge"
-        android:paddingHorizontal="8dp"
+        android:paddingHorizontal="9dp"
         android:paddingVertical="2dp"
         android:text="@string/badge_best_value"
-        android:textColor="@color/surface_night"
+        android:textColor="#FFFFFF"
         android:textSize="10sp"
         android:textStyle="bold"
         android:letterSpacing="0.08"
@@ -35,10 +35,9 @@
             android:id="@+id/tierPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/bp_yellow"
+            android:fontFamily="@font/bp_sans_black"
+            android:textColor="@color/ink"
             android:textSize="40sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-black"
             tools:text="$20" />
 
         <TextView
@@ -47,9 +46,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:gravity="center"
-            android:textColor="@color/text_primary"
+            android:fontFamily="@font/bp_sans_bold"
+            android:textColor="@color/ink"
             android:textSize="16sp"
-            android:textStyle="bold"
             tools:text="Deluxe Wash" />
 
         <TextView
@@ -58,7 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
             android:gravity="center"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/ink_soft"
             android:textSize="11sp"
             tools:text="Triple foam, wax &amp; dry" />
     </LinearLayout>

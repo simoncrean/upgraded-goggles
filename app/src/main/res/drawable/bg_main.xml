@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="rectangle">
-            <gradient
-                android:type="linear"
-                android:angle="270"
-                android:startColor="@color/surface_night_high"
-                android:centerColor="@color/surface_night"
-                android:endColor="#020A05" />
-        </shape>
-    </item>
-</layer-list>
+<!-- Bright BP gradient: pale lime top-left flowing to deep green. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:type="linear"
+        android:angle="315"
+        android:startColor="@color/gradient_start"
+        android:centerColor="@color/gradient_mid"
+        android:endColor="@color/gradient_end" />
+</shape>
